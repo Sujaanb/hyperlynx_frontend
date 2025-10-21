@@ -50,7 +50,7 @@ const Impact = () => {
   ];
 
   return (
-    <section id="impact" className="py-20 bg-gradient-to-br from-slate-50 to-gray-100" ref={ref}>
+    <section id="impact" className="py-20 bg-white" ref={ref}>
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -129,16 +129,16 @@ const Impact = () => {
           className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
         >
           <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
-            <div className="text-5xl font-bold text-secondary mb-2">500+</div>
+            <div className="text-5xl font-bold text-secondary mb-2">100+</div>
             <div className="text-gray-600 font-medium">Regulatory Sources</div>
-          </div>
-          <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
-            <div className="text-5xl font-bold text-accent mb-2">24/7</div>
-            <div className="text-gray-600 font-medium">Continuous Monitoring</div>
           </div>
           <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
             <div className="text-5xl font-bold text-success mb-2">99.9%</div>
             <div className="text-gray-600 font-medium">Accuracy Rate</div>
+          </div>
+          <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
+            <div className="text-5xl font-bold text-accent mb-2">24/7</div>
+            <div className="text-gray-600 font-medium">Continuous Monitoring</div>
           </div>
         </motion.div>
       </div>

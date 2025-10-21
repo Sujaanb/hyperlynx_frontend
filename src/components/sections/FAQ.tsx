@@ -13,7 +13,7 @@ const FAQ = () => {
     {
       question: 'What data sources does Hyperlynx monitor?',
       answer:
-        'Hyperlynx monitors over 500 regulatory sources including federal and state regulators (SEC, FINRA, CFPB, OCC, state banking departments), international bodies (FSB, BCBS, IOSCO), and industry standards organizations. We continuously update our sources to ensure comprehensive coverage.',
+        'Hyperlynx monitors over 100 regulatory sources including US federal and state regulators (SEC, FINRA, CFPB, OCC, state banking departments), European regulators (EBA, FCA, ESMA), international bodies (FSB, BCBS, IOSCO), and industry standards organizations. We continuously update our sources to ensure comprehensive coverage.',
     },
     {
       question: 'How accurate is the AI-powered compliance analysis?',
@@ -52,7 +52,7 @@ const FAQ = () => {
   };
 
   return (
-    <section id="faq" className="py-20 bg-gradient-to-br from-slate-50 to-gray-100" ref={ref}>
+    <section id="faq" className="py-20 bg-white" ref={ref}>
       <div className="container-custom max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -127,16 +127,12 @@ const FAQ = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="#contact"
+              href="https://forms.gle/1HPmiMKf8ksfPo6W7"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-white text-secondary hover:bg-gray-100 font-semibold py-3 px-8 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
-              Schedule a Demo
-            </a>
-            <a
-              href="#contact"
-              className="bg-accent hover:bg-accent-dark text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              Contact Sales
+              Request a Demo
             </a>
           </div>
         </motion.div>

@@ -19,7 +19,6 @@ const Header = () => {
     { name: 'Home', href: '#home' },
     { name: 'Features', href: '#features' },
     { name: 'Impact', href: '#impact' },
-    { name: 'Testimonials', href: '#testimonials' },
     { name: 'FAQ', href: '#faq' },
   ];
 
@@ -54,8 +53,13 @@ const Header = () => {
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <a href="#contact" className="btn-primary">
-              Schedule a Demo
+            <a
+              href="https://forms.gle/1HPmiMKf8ksfPo6W7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary"
+            >
+              Request a Demo
             </a>
           </div>
 
@@ -89,11 +93,13 @@ const Header = () => {
                   </a>
                 ))}
                 <a
-                  href="#contact"
+                  href="https://forms.gle/1HPmiMKf8ksfPo6W7"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="btn-primary text-center"
                 >
-                  Schedule a Demo
+                  Request a Demo
                 </a>
               </nav>
             </motion.div>

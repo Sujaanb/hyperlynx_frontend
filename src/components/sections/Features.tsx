@@ -53,7 +53,7 @@ const Features = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: 'easeOut' },
+      transition: { duration: 0.6, ease: [0.43, 0.13, 0.23, 0.96] as any },
     },
   };
 
@@ -67,7 +67,7 @@ const Features = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-            Comprehensive Compliance Solutions
+            Compliance Copilot
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Everything you need to manage cyber regulatory compliance for your fintech, powered by cutting-edge AI technology.
@@ -84,7 +84,7 @@ const Features = () => {
             <motion.div
               key={index}
               variants={itemVariants}
-              className="group relative bg-slate-50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-secondary/30"
+              className="group relative bg-white rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-secondary/30"
             >
               <div
                 className={`${feature.color} w-20 h-20 rounded-xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-300`}

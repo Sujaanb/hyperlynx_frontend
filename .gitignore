@@ -44,3 +44,7 @@ coverage
 
 # Claude files
 .claude/**/*
+.claude/settings.local.json
+
+# Vercel files
+.vercel
