@@ -4,6 +4,7 @@ import Hero from './components/sections/Hero';
 import Features from './components/sections/Features';
 import Impact from './components/sections/Impact';
 import FAQ from './components/sections/FAQ';
+import Copilot from './components/Copilot';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <FAQ />
       </main>
       <Footer />
+      <Copilot />
     </div>
   );
 }
