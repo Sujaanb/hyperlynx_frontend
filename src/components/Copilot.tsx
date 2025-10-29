@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Sparkles, Paperclip } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { generateContent } from '../services/api';
@@ -18,8 +18,10 @@ const Copilot = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [localLLM, setLocalLLM] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,13 +37,27 @@ const Copilot = () => {
     }
   }, [isOpen]);
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input.trim(),
+      content: selectedFile ? `${input.trim()} [Attached: ${selectedFile.name}]` : input.trim(),
       timestamp: new Date(),
     };
 
@@ -51,8 +67,9 @@ const Copilot = () => {
 
     try {
       const response = await generateContent({
-        question: userMessage.content,
+        question: input.trim(),
         local_llm: localLLM,
+        file: selectedFile || undefined,
       });
 
       const assistantMessage: Message = {
@@ -73,6 +90,7 @@ const Copilot = () => {
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      handleRemoveFile();
     }
   };
 
@@ -202,7 +220,37 @@ const Copilot = () => {
 
             {/* Input */}
             <div className="border-t border-gray-200 p-4">
+              {selectedFile && (
+                <div className="mb-3 flex items-center justify-between rounded-lg bg-gray-50 p-2">
+                  <div className="flex items-center gap-2">
+                    <Paperclip className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm text-gray-700 truncate">{selectedFile.name}</span>
+                  </div>
+                  <button
+                    onClick={handleRemoveFile}
+                    className="text-gray-500 hover:text-red-500 transition-colors"
+                    aria-label="Remove file"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
               <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleFileSelect}
+                  accept=".pdf,.docx,.txt,.csv,.xls,.xlsx,.md"
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  aria-label="Attach file"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </button>
                 <input
                   ref={inputRef}
                   type="text"

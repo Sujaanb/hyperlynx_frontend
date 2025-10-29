@@ -3,6 +3,7 @@ const API_BASE_URL = `${import.meta.env.VITE_API_URL}/HL/content/v1`;
 export interface GenerateContentRequest {
   question: string;
   local_llm: boolean;
+  file?: File;
 }
 
 export interface GenerateContentResponse {
@@ -15,12 +16,17 @@ export const generateContent = async (
   request: GenerateContentRequest
 ): Promise<GenerateContentResponse> => {
   try {
+    const formData = new FormData();
+    formData.append('question', request.question);
+    formData.append('local_llm', request.local_llm.toString());
+    
+    if (request.file) {
+      formData.append('file', request.file);
+    }
+
     const response = await fetch(`${API_BASE_URL}/generate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
+      body: formData,
     });
 
     if (!response.ok) {
