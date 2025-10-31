@@ -41,45 +41,45 @@ export default function App() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-32 pb-20 px-6">
+      <section id="home" className="pt-32 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
-              <Badge className="bg-white/[0.05] text-gray-300 border-white/[0.08] mb-6 hover:bg-white/[0.08] transition-colors">
+              <Badge className="bg-white/[0.05] text-gray-300 border-white/[0.08] mb-4 sm:mb-6 hover:bg-white/[0.08] transition-colors text-xs sm:text-sm">
                 Announcing Compliance Copilot
-                <ChevronRight className="w-4 h-4 ml-1" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
               </Badge>
               
-              <h1 className="text-6xl mb-6 leading-tight text-gray-100">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-4 sm:mb-6 leading-tight text-gray-100">
                 Agentic AI for Cyber Compliance
               </h1>
               
-              <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+              <p className="text-lg sm:text-xl text-gray-400 mb-6 sm:mb-8 leading-relaxed">
                 Streamline regulatory change management for fintechs. Stay compliant, reduce risk, and focus on what matters.
               </p>
               
-              <div className="flex items-center gap-4 mb-8">
-                <Button className="bg-white text-black hover:bg-gray-200">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 sm:mb-8">
+                <Button className="w-full sm:w-auto bg-white text-black hover:bg-gray-200">
                   Request a Demo
                 </Button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 text-sm">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white/[0.08] flex items-center justify-center">
-                    <Check className="w-3 h-3 text-gray-400" />
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/[0.08] flex items-center justify-center">
+                    <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-400" />
                   </div>
                   <span className="text-gray-500">SOC 2 Compliant</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white/[0.08] flex items-center justify-center">
-                    <Check className="w-3 h-3 text-gray-400" />
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/[0.08] flex items-center justify-center">
+                    <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-400" />
                   </div>
                   <span className="text-gray-500">ISO 27001 Certified</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white/[0.08] flex items-center justify-center">
-                    <Check className="w-3 h-3 text-gray-400" />
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/[0.08] flex items-center justify-center">
+                    <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-400" />
                   </div>
                   <span className="text-gray-500">GDPR Ready</span>
                 </div>
