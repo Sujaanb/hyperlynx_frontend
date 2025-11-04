@@ -48,3 +48,6 @@ coverage
 
 # Vercel files
 .vercel
+
+WARP.md
+.claude/settings.local.json
