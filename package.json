@@ -55,7 +55,7 @@
       "scripts": {
             "dev": "vite",
             "build": "vite build",
-            "build:dashboard": "cd hyperlynx_dashboard && npm install && npm run build && cd .. && xcopy /E /I /Y hyperlynx_dashboard\\build dist\\dashboard",
+            "build:dashboard": "cd hyperlynx_dashboard && npm install && npm run build && cd .. && mkdir -p dist/dashboard && cp -r hyperlynx_dashboard/build/* dist/dashboard/",
             "build:all": "npm run build && npm run build:dashboard"
       }
 }
