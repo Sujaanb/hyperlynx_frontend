@@ -35,7 +35,9 @@ export default function App() {
             <a href="#contact" className="text-gray-500 hover:text-gray-300 transition-colors">Contact</a>
           </div>
           <div className="flex items-center gap-4">
-            <Button className="bg-white text-black hover:bg-gray-200">Get Started</Button>
+            <Button asChild className="bg-white text-black hover:bg-gray-200">
+              <a href="/dashboard">Get Started</a>
+            </Button>
           </div>
         </div>
       </nav>
