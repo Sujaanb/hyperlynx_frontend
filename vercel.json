@@ -2,6 +2,14 @@
   "buildCommand": "npm run build:all",
   "outputDirectory": "dist",
   "installCommand": "npm install",
+  "env": {
+    "VITE_API_URL": "https://hyperlynx-backend.onrender.com/HL/content/v1"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://hyperlynx-backend.onrender.com/HL/content/v1"
+    }
+  },
   "rewrites": [
     {
       "source": "/dashboard",
