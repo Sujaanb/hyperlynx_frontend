@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Send, Bot, User, Lightbulb, Sparkles, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Send, Bot, User, Lightbulb, Sparkles, FileText, AlertCircle, CheckCircle, Paperclip, X, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
@@ -7,6 +9,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Badge } from './ui/badge';
 import { Topbar } from './Topbar';
 import { Sidebar } from './Sidebar';
+import { copilotApi, CopilotApiError } from '../services/copilotApi';
 
 interface CopilotModuleProps {
   onNavigate: (view: string) => void;
@@ -14,10 +17,11 @@ interface CopilotModuleProps {
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'error';
   content: string;
   timestamp: Date;
   suggestions?: string[];
+  fileName?: string;
 }
 
 const suggestedPrompts = [
@@ -47,8 +51,10 @@ export function CopilotModule({ onNavigate }: CopilotModuleProps) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const messageText = text || input;
     if (!messageText.trim()) return;
 
@@ -57,61 +63,57 @@ export function CopilotModule({ onNavigate }: CopilotModuleProps) {
       role: 'user',
       content: messageText,
       timestamp: new Date(),
+      fileName: selectedFile?.name,
     };
 
-    setMessages([...messages, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
+    const fileToSend = selectedFile;
+    setSelectedFile(null);
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const response = await copilotApi.generateContent({
+        question: messageText,
+        local_llm: false,
+        file: fileToSend || undefined,
+      });
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: getAIResponse(messageText),
+        content: response.data,
         timestamp: new Date(),
-        suggestions: getSuggestions(messageText),
       };
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error generating content:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'error',
+        content: error instanceof CopilotApiError 
+          ? error.message 
+          : 'Failed to connect to the server. Please try again.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
-  const getAIResponse = (query: string): string => {
-    const lowerQuery = query.toLowerCase();
-    
-    if (lowerQuery.includes('dora')) {
-      return "DORA (Digital Operational Resilience Act) requires financial entities to:\n\n1. **ICT Risk Management**: Establish comprehensive frameworks for identifying and managing ICT risks\n2. **Incident Response**: Define procedures with strict timelines (major incidents reported within 4 hours)\n3. **Third-Party Risk**: Implement due diligence for ICT service providers\n4. **Testing**: Conduct regular resilience testing including TLPT\n\nWould you like me to help you create an implementation plan for any of these areas?";
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
     }
-    
-    if (lowerQuery.includes('priority') || lowerQuery.includes('priorities')) {
-      return "Based on your assessment, here are your top compliance priorities:\n\n**High Priority:**\n1. Define incident response SLAs (DORA)\n2. Implement security incident reporting process (NIS2)\n3. Update ICT risk assessment framework (DORA)\n\n**Medium Priority:**\n4. Review third-party vendor agreements (DORA)\n5. Enhance supply chain security measures (NIS2)\n\n**Low Priority:**\n6. Complete asset inventory documentation (ISO27001)\n\nI can help you create detailed action plans for any of these items.";
-    }
-    
-    if (lowerQuery.includes('iso')) {
-      return "ISO27001 is an international standard for Information Security Management Systems (ISMS). Key requirements include:\n\n• **Context of Organization**: Understanding your security landscape\n• **Leadership**: Management commitment and roles\n• **Planning**: Risk assessment and treatment\n• **Support**: Resources, competence, awareness\n• **Operation**: Implementing controls from Annex A\n• **Evaluation**: Monitoring and internal audits\n• **Improvement**: Continuous enhancement\n\nWould you like guidance on implementing any specific control area?";
-    }
-    
-    if (lowerQuery.includes('roadmap') || lowerQuery.includes('plan')) {
-      return "I can help you create a comprehensive compliance roadmap. Here's a suggested 6-month timeline:\n\n**Month 1-2: Foundation**\n• Complete gap assessment\n• Define governance structure\n• Establish baseline documentation\n\n**Month 3-4: Implementation**\n• Deploy critical controls\n• Set up incident response procedures\n• Conduct staff training\n\n**Month 5-6: Testing & Refinement**\n• Run tabletop exercises\n• Perform internal audits\n• Refine based on findings\n\nWould you like me to create a detailed project plan with tasks and owners?";
-    }
-    
-    return "I can help you with various compliance topics including DORA, NIS2, and ISO27001 requirements. I can also assist with:\n\n• Creating implementation plans\n• Generating policy templates\n• Explaining specific requirements\n• Prioritizing compliance activities\n• Providing best practice guidance\n\nWhat specific aspect would you like to explore?";
   };
 
-  const getSuggestions = (query: string): string[] => {
-    const lowerQuery = query.toLowerCase();
-    
-    if (lowerQuery.includes('dora')) {
-      return ['Create DORA implementation plan', 'Show incident response template', 'Third-party risk checklist'];
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
-    if (lowerQuery.includes('priority')) {
-      return ['Create action plan', 'Assign tasks to team', 'Set timeline'];
-    }
-    if (lowerQuery.includes('roadmap')) {
-      return ['Generate detailed timeline', 'Export to project management tool', 'Schedule team meeting'];
-    }
-    
-    return ['Tell me more', 'Show examples', 'Create template'];
   };
 
   return (
@@ -138,10 +140,10 @@ export function CopilotModule({ onNavigate }: CopilotModuleProps) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden p-4 lg:p-6">
-            <div className="max-w-4xl mx-auto h-full flex flex-col">
-              {messages.length === 1 && (
-                <div className="mb-6">
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {messages.length === 1 && (
+              <div className="px-4 lg:px-6 pt-4 pb-2 flex-shrink-0">
+                <div className="max-w-4xl mx-auto">
                   <h3 className="text-xs lg:text-sm mb-3 text-gray-600">Quick Actions</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {suggestedPrompts.map((prompt, index) => {
@@ -163,9 +165,11 @@ export function CopilotModule({ onNavigate }: CopilotModuleProps) {
                     })}
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              <ScrollArea className="flex-1 pr-4">
+            <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4">
+              <div className="max-w-4xl mx-auto">
                 <div className="space-y-6">
                   {messages.map((message) => (
                     <div key={message.id} className="space-y-3">
@@ -177,15 +181,60 @@ export function CopilotModule({ onNavigate }: CopilotModuleProps) {
                             <Bot className="w-5 h-5 text-white" />
                           </div>
                         )}
+                        {message.role === 'error' && (
+                          <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                            <AlertCircle className="w-5 h-5 text-white" />
+                          </div>
+                        )}
                         <div
                           className={`max-w-[80%] rounded-lg p-4 ${
                             message.role === 'user'
                               ? 'bg-black text-white'
+                              : message.role === 'error'
+                              ? 'bg-red-50 border border-red-200'
                               : 'bg-white border'
                           }`}
                         >
-                          <p className="text-sm whitespace-pre-line">{message.content}</p>
-                          <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-gray-300' : 'text-gray-500'}`}>
+                          {message.fileName && message.role === 'user' && (
+                            <div className="flex items-center gap-2 mb-2 text-xs text-gray-400">
+                              <Paperclip className="w-3 h-3" />
+                              <span>{message.fileName}</span>
+                            </div>
+                          )}
+                          {message.role === 'assistant' ? (
+                            <div className="text-sm prose prose-sm max-w-none">
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                  a: ({ node, ...props }) => (
+                                    <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline" />
+                                  ),
+                                  code: ({ node, inline, ...props }: any) => (
+                                    inline ? (
+                                      <code className="bg-gray-100 px-1 py-0.5 rounded text-sm" {...props} />
+                                    ) : (
+                                      <code className="block bg-gray-100 p-2 rounded text-sm overflow-x-auto" {...props} />
+                                    )
+                                  ),
+                                }}
+                              >
+                                {message.content}
+                              </ReactMarkdown>
+                            </div>
+                          ) : (
+                            <p className={`text-sm whitespace-pre-line ${
+                              message.role === 'error' ? 'text-red-700' : ''
+                            }`}>
+                              {message.content}
+                            </p>
+                          )}
+                          <p className={`text-xs mt-2 ${
+                            message.role === 'user' 
+                              ? 'text-gray-300' 
+                              : message.role === 'error'
+                              ? 'text-red-500'
+                              : 'text-gray-500'
+                          }`}>
                             {message.timestamp.toLocaleTimeString()}
                           </p>
                         </div>
@@ -230,26 +279,67 @@ export function CopilotModule({ onNavigate }: CopilotModuleProps) {
                     </div>
                   )}
                 </div>
-              </ScrollArea>
+              </div>
+            </div>
 
-              <div className="mt-6">
+            <div className="px-4 lg:px-6 pb-4 flex-shrink-0">
+              <div className="max-w-4xl mx-auto">
                 <Card className="p-4">
+                  {selectedFile && (
+                    <div className="mb-3 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg p-2">
+                      <Paperclip className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm text-blue-700 flex-1 truncate">{selectedFile.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemoveFile}
+                        className="h-6 w-6 p-0 hover:bg-blue-100"
+                      >
+                        <X className="w-4 h-4 text-blue-600" />
+                      </Button>
+                    </div>
+                  )}
                   <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isTyping}
+                      className="flex-shrink-0"
+                      title="Upload file"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                    </Button>
                     <Input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                      onKeyPress={(e) => e.key === 'Enter' && !isTyping && handleSend()}
                       placeholder="Ask about compliance requirements, get guidance, or request templates..."
                       className="flex-1"
                       disabled={isTyping}
                     />
-                    <Button onClick={() => handleSend()} disabled={!input.trim() || isTyping} className="gap-2">
-                      <Send className="w-4 h-4" />
+                    <Button 
+                      onClick={() => handleSend()} 
+                      disabled={!input.trim() || isTyping} 
+                      className="gap-2 flex-shrink-0"
+                    >
+                      {isTyping ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
                       Send
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Copilot can help with DORA, NIS2, and ISO27001 compliance guidance
+                    Copilot can help with DORA, NIS2, and ISO27001 compliance guidance. Upload files for document analysis.
                   </p>
                 </Card>
               </div>
