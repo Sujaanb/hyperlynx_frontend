@@ -16,8 +16,8 @@
       "destination": "/dashboard/index.html"
     },
     {
-      "source": "/dashboard/:path*",
-      "destination": "/dashboard/:path*"
+      "source": "/dashboard/(.*)",
+      "destination": "/dashboard/index.html"
     }
   ],
   "cleanUrls": true,

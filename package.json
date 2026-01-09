@@ -50,12 +50,14 @@
       "devDependencies": {
             "@types/node": "^20.10.0",
             "@vitejs/plugin-react-swc": "^3.10.2",
+            "concurrently": "^9.2.1",
             "vite": "6.3.5"
       },
       "scripts": {
-            "dev": "vite",
+            "dev": "concurrently \"vite\" \"npm run dev:dashboard\"",
+            "dev:dashboard": "cd hyperlynx_dashboard && vite",
             "build": "vite build",
-            "build:dashboard": "cd hyperlynx_dashboard && npm install && npm run build && cd .. && mkdir -p dist/dashboard && cp -r hyperlynx_dashboard/build/* dist/dashboard/",
+            "build:dashboard": "node scripts/build-dashboard.js",
             "build:all": "npm run build && npm run build:dashboard"
       }
 }
