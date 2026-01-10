@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkSession = async () => {
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         console.error('Session check error:', error);
         setUser(null);
@@ -60,54 +60,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (email: string, password: string, name: string) => {
     try {
       setError(null);
-      
+
       console.log('Starting signup process for:', email);
-      
-      // Call the backend signup endpoint
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-7f9a4697/signup`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({ email, password, name }),
-        }
-      );
 
-      const data = await response.json();
-      console.log('Signup response:', { status: response.status, data });
-
-      if (!response.ok) {
-        const errorMsg = data.error || 'Failed to create account';
-        console.error('Signup failed:', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      console.log('User created, attempting sign in...');
-
-      // Now sign in the user
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            name,
+          }
+        }
       });
 
-      if (signInError) {
-        console.error('Sign in error after signup:', signInError);
-        throw signInError;
+      if (error) {
+        console.error('Signup error:', error);
+        throw error;
       }
 
-      console.log('Sign in successful');
+      console.log('Signup successful / Confirmation email sent');
 
-      if (signInData.session) {
+      if (data.session) {
         setUser({
-          id: signInData.user.id,
-          email: signInData.user.email || '',
-          name: signInData.user.user_metadata?.name,
+          id: data.user!.id,
+          email: data.user!.email || '',
+          name: data.user!.user_metadata?.name,
         });
-        setAccessToken(signInData.session.access_token);
+        setAccessToken(data.session.access_token);
+      } else if (data.user) {
+        // Handle case where email confirmation is required but no session is returned immediately
+        // For now, we can just log it or set a specific message/state if needed
+        console.log('User created, check email for confirmation if required.');
       }
+
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to create account';
       console.error('Signup process error:', errorMessage, err);
@@ -119,9 +104,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       setError(null);
-      
+
       console.log('Starting login process for:', email);
-      
+
       const { data: { session }, error } = await supabase.auth.signInWithPassword({
         email,
         password,

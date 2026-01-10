@@ -3,7 +3,7 @@ import { Upload, FileText, Trash2, Download, File } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { useAuth } from './AuthContext';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { createClient } from '../utils/supabase/client';
 import { toast } from 'sonner@2.0.3';
 
 interface Document {
@@ -27,21 +27,34 @@ export function DocumentsPage() {
 
   const loadDocuments = async () => {
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-7f9a4697/documents`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (!response.ok) {
-        throw new Error('Failed to load documents');
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
-      setDocuments(data.documents || []);
+      // Map database columns to component state shape if needed
+      // DB: file_name, file_type, file_size, created_at, id
+      // Component: fileName, fileType, size, uploadedAt, id
+      const mappedDocs = (data || []).map(doc => ({
+        id: doc.id,
+        fileName: doc.file_name,
+        fileType: doc.file_type,
+        size: doc.file_size,
+        uploadedAt: doc.created_at,
+        filePath: doc.file_path
+      }));
+
+      setDocuments(mappedDocs);
     } catch (error) {
       console.error('Error loading documents:', error);
       toast.error('Failed to load documents');
@@ -74,24 +87,37 @@ export function DocumentsPage() {
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('fileName', file.name);
-      formData.append('fileType', file.type);
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-7f9a4697/documents/upload`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: formData,
-        }
-      );
+      if (!user) throw new Error('User not authenticated');
 
-      if (!response.ok) {
-        throw new Error('Failed to upload file');
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { error: dbError } = await supabase
+        .from('documents')
+        .insert({
+          user_id: user.id,
+          file_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+          file_path: filePath
+        });
+
+      if (dbError) {
+        // Cleanup storage if db insert fails
+        await supabase.storage.from('documents').remove([filePath]);
+        throw dbError;
       }
 
       toast.success('Document uploaded successfully');
@@ -107,21 +133,25 @@ export function DocumentsPage() {
 
   const handleDownload = async (doc: Document) => {
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-7f9a4697/documents/${doc.id}/download`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const supabase = createClient();
 
-      if (!response.ok) {
-        throw new Error('Failed to download file');
+      // Need the file path, which we should have in our document object now
+      // If the type interface doesn't have it, we might need to cast or update interface
+      const filePath = (doc as any).filePath;
+
+      if (!filePath) {
+        throw new Error('File path not found');
       }
 
-      const data = await response.json();
-      window.open(data.url, '_blank');
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(filePath, 3600);
+
+      if (error) {
+        throw error;
+      }
+
+      window.open(data.signedUrl, '_blank');
     } catch (error) {
       console.error('Error downloading file:', error);
       toast.error('Failed to download document');
@@ -134,18 +164,24 @@ export function DocumentsPage() {
     }
 
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-7f9a4697/documents/${doc.id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const supabase = createClient();
+      const filePath = (doc as any).filePath;
 
-      if (!response.ok) {
-        throw new Error('Failed to delete file');
+      if (filePath) {
+        const { error: storageError } = await supabase.storage
+          .from('documents')
+          .remove([filePath]);
+
+        if (storageError) console.error('Storage delete error:', storageError);
+      }
+
+      const { error } = await supabase
+        .from('documents')
+        .delete()
+        .eq('id', doc.id);
+
+      if (error) {
+        throw error;
       }
 
       toast.success('Document deleted successfully');
@@ -191,8 +227,8 @@ export function DocumentsPage() {
           <p className="text-sm text-gray-600 mb-4 text-center">
             Upload PDF or Excel files (max 50MB)
           </p>
-          <Button 
-            disabled={uploading} 
+          <Button
+            disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
           >
             {uploading ? 'Uploading...' : 'Choose File'}

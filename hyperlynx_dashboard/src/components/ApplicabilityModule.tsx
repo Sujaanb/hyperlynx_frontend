@@ -9,7 +9,7 @@ import { Topbar } from './Topbar';
 import { Sidebar } from './Sidebar';
 import { Progress } from './ui/progress';
 import { useAuth } from './AuthContext';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { createClient } from '../utils/supabase/client';
 import { toast } from 'sonner@2.0.3';
 
 interface ApplicabilityModuleProps {
@@ -117,39 +117,42 @@ export function ApplicabilityModule({ onComplete, onNavigate }: ApplicabilityMod
       const industry = answers.industry;
       const data = answers.data;
       const services = answers.services;
-      
-      const results: ApplicabilityResults = {
+
+      const res: ApplicabilityResults = {
         DORA: industry === 'financial' || data === 'financial' || data === 'both' ? 'applicable' : 'not-applicable',
         NIS2: services === 'yes' || industry === 'energy' ? 'applicable' : services === 'partial' ? 'partial' : 'not-applicable',
         ISO27001: data !== 'none' || services !== 'no' ? 'applicable' : 'partial',
         companyName: answers.companyName || 'Your Organization',
       };
-      
+
       // Save to database
       setSaving(true);
       try {
-        const response = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/make-server-7f9a4697/applicability`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({ answers, results }),
-          }
-        );
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        if (!response.ok) {
-          throw new Error('Failed to save assessment');
+        if (!user) {
+          throw new Error('User not authenticated');
+        }
+
+        const { error } = await supabase
+          .from('applicability_assessments')
+          .insert({
+            user_id: user.id,
+            answers,
+            results: res,
+          });
+
+        if (error) {
+          throw error;
         }
 
         toast.success('Assessment saved successfully');
-        onComplete(results);
+        onComplete(res);
       } catch (error) {
         console.error('Error saving assessment:', error);
         toast.error('Failed to save assessment, but you can continue');
-        onComplete(results);
+        onComplete(res);
       } finally {
         setSaving(false);
       }
@@ -166,13 +169,13 @@ export function ApplicabilityModule({ onComplete, onNavigate }: ApplicabilityMod
     <div className="h-screen flex flex-col bg-gray-50">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex-1 flex overflow-hidden">
-        <Sidebar 
-          currentView="applicability" 
+        <Sidebar
+          currentView="applicability"
           onNavigate={onNavigate}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
-        
+
         <div className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-4 lg:p-8">
             <div className="mb-6 lg:mb-8">
@@ -228,11 +231,10 @@ export function ApplicabilityModule({ onComplete, onNavigate }: ApplicabilityMod
                   {currentQuestion.options?.map((option) => (
                     <div
                       key={option.value}
-                      className={`relative flex items-start gap-4 p-5 border-2 rounded-lg cursor-pointer transition-all ${
-                        answers[currentQuestion.id] === option.value
-                          ? 'border-black bg-gray-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`relative flex items-start gap-4 p-5 border-2 rounded-lg cursor-pointer transition-all ${answers[currentQuestion.id] === option.value
+                        ? 'border-black bg-gray-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
                       onClick={() => handleOptionSelect(option.value)}
                     >
                       <RadioGroupItem
@@ -263,7 +265,7 @@ export function ApplicabilityModule({ onComplete, onNavigate }: ApplicabilityMod
               >
                 Back
               </Button>
-              
+
               <Button
                 onClick={handleNext}
                 disabled={!canProceed() || saving}

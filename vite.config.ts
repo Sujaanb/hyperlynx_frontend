@@ -61,7 +61,7 @@ export default defineConfig({
       '/dashboard': {
         target: 'http://localhost:3001',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/dashboard/, '/dashboard'),
+        rewrite: (path) => path === '/dashboard' ? '/dashboard/' : path,
       },
     },
   },

@@ -5,7 +5,7 @@ import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useAuth } from './AuthContext';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { createClient } from '../utils/supabase/client';
 import { toast } from 'sonner@2.0.3';
 
 export function ProfileSettings() {
@@ -13,7 +13,7 @@ export function ProfileSettings() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { accessToken } = useAuth();
+  const { accessToken } = useAuth(); // Keeping this if needed, but we used createClient
 
   useEffect(() => {
     loadProfile();
@@ -21,22 +21,14 @@ export function ProfileSettings() {
 
   const loadProfile = async () => {
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-7f9a4697/profile`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const supabase = createClient();
+      const { data: { user }, error } = await supabase.auth.getUser();
 
-      if (!response.ok) {
-        throw new Error('Failed to load profile');
-      }
+      if (error) throw error;
+      if (!user) throw new Error('No user found');
 
-      const data = await response.json();
-      setName(data.name || '');
-      setEmail(data.email || '');
+      setName(user.user_metadata?.name || '');
+      setEmail(user.email || '');
     } catch (error) {
       console.error('Error loading profile:', error);
       toast.error('Failed to load profile');
@@ -48,20 +40,13 @@ export function ProfileSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-7f9a4697/profile`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ name }),
-        }
-      );
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({
+        data: { name }
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
+      if (error) {
+        throw error;
       }
 
       toast.success('Profile updated successfully');
