@@ -56,14 +56,14 @@ export function Sidebar({ currentView, onNavigate, isOpen = true, onClose, onLog
                     onClose?.();
                   }}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
+                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm whitespace-nowrap overflow-hidden text-ellipsis",
                     isActive 
                       ? "bg-black text-white" 
                       : "text-gray-700 hover:bg-gray-100"
                   )}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
                 </button>
               );
             })}
