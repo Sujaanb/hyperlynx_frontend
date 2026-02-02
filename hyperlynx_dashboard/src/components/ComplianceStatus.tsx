@@ -154,7 +154,7 @@ export function ComplianceStatus({ onNavigate }: ComplianceStatusProps) {
       </div>
 
       <Tabs defaultValue="DORA" className="space-y-6">
-        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
+        <TabsList className="w-full !w-full justify-start overflow-x-auto flex-nowrap !flex-nowrap !inline-flex">
           {frameworkStatus.map((framework) => (
             <TabsTrigger key={framework.name} value={framework.name} className="whitespace-nowrap">
               {framework.name}
