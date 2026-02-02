@@ -34,7 +34,7 @@ export function Sidebar({ currentView, onNavigate, isOpen = true, onClose, onLog
       
       {/* Sidebar */}
       <div className={cn(
-        "w-56 bg-white border-r h-full flex flex-col fixed lg:relative z-50 transition-transform duration-300",
+        "w-72 bg-white border-r h-full flex flex-col fixed lg:relative z-50 transition-transform duration-300",
         isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         <div className="p-4 lg:p-6">
