@@ -113,11 +113,11 @@ export function ComplianceStatus({ onNavigate }: ComplianceStatusProps) {
         </Card>
 
         <Card className="p-4 lg:p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+          <div className="flex items-center gap-3 whitespace-nowrap">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
-            <div>
+            <div className="flex items-center gap-1">
               <div className="text-2xl lg:text-3xl">{frameworkStatus.length}</div>
               <p className="text-xs lg:text-sm text-gray-600">Active Frameworks</p>
             </div>
@@ -125,11 +125,11 @@ export function ComplianceStatus({ onNavigate }: ComplianceStatusProps) {
         </Card>
 
         <Card className="p-4 lg:p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <div className="flex items-center gap-3 whitespace-nowrap">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <TrendingUp className="w-5 h-5 text-blue-600" />
             </div>
-            <div>
+            <div className="flex items-center gap-1">
               <div className="text-2xl lg:text-3xl">
                 {frameworkStatus.filter(f => f.trend === 'up').length}
               </div>
@@ -139,11 +139,11 @@ export function ComplianceStatus({ onNavigate }: ComplianceStatusProps) {
         </Card>
 
         <Card className="p-4 lg:p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+          <div className="flex items-center gap-3 whitespace-nowrap">
+            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertCircle className="w-5 h-5 text-amber-600" />
             </div>
-            <div>
+            <div className="flex items-center gap-1">
               <div className="text-2xl lg:text-3xl">
                 {frameworkStatus.reduce((sum, f) => sum + f.controls.nonCompliant, 0)}
               </div>
