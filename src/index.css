@@ -2447,3 +2447,21 @@ html {
     height: 0;
   }
 }
+
+.marketing-nav-links {
+  display: none;
+}
+
+.marketing-nav-toggle {
+  display: inline-flex;
+}
+
+@media (min-width: 768px) {
+  .marketing-nav-links {
+    display: flex;
+  }
+
+  .marketing-nav-toggle {
+    display: none;
+  }
+}

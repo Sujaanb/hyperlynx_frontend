@@ -1,6 +1,6 @@
 # Hyperlynx
 
-Hyperlynx — Agentic AI for Cyber Compliance. This repository contains the Hyperlynx landing page and UI components used to showcase the Compliance Copilot product.
+Hyperlynx — Agentic AI for Cyber Compliance. This repository contains a single React app with the Hyperlynx marketing site and dashboard.
 
 ## Running the project
 
@@ -14,7 +14,13 @@ npm install
 npm run dev
 ```
 
-3. Open the app in your browser (commonly http://localhost:5173).
+3. Open the app in your browser (commonly http://localhost:3000).
+
+## Routes
+
+- Marketing site: /
+- Dashboard: /dashboard
+- Auth: /dashboard/login and /dashboard/signup
 
 ## Notes
 
